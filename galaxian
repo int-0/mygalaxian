@@ -1,0 +1,72 @@
+#!/usr/bin/env python
+
+import pygame
+
+class Game:
+    def __init__(self, screen):
+        self.__scr = screen
+
+        self.bg = pygame.image.load('background.jpg')
+        self.ship = pygame.image.load('ship.png')
+        self.shoot = pygame.image.load('shoot.png')
+        self.shoot_sound = pygame.mixer.Sound('shoot.wav')
+        self.ship_x = 640
+
+        self.laser_x = 0
+        self.laser_y = 0
+        self.laser = False
+
+    def run(self):
+
+        go_left = False
+        go_right = False
+
+        while 1:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return
+                elif (event.type == pygame.KEYDOWN and
+                      event.key == pygame.K_ESCAPE):
+                    return
+                elif (event.type == pygame.KEYDOWN and
+                      event.key == pygame.K_LEFT):
+                    go_left = True
+                elif (event.type == pygame.KEYDOWN and
+                      event.key == pygame.K_RIGHT):
+                    go_right = True
+                elif (event.type == pygame.KEYUP and
+                      event.key == pygame.K_LEFT):
+                    go_left = False
+                elif (event.type == pygame.KEYUP and
+                      event.key == pygame.K_RIGHT):
+                    go_right = False
+                elif (event.type == pygame.KEYDOWN and
+                      event.key == pygame.K_SPACE) and not self.laser:
+                    self.shoot_sound.play()
+                    self.laser = True
+                    self.laser_x = self.ship_x
+                    self.laser_y = 700
+
+            if go_left:
+                self.ship_x = self.ship_x - 1
+            if go_right:
+                self.ship_x = self.ship_x + 1
+                
+            # Draw everything
+            self.__scr.blit(self.bg, (0, 0))
+
+            self.__scr.blit(self.ship, (self.ship_x, 700))
+
+            if self.laser:
+                self.__scr.blit(self.shoot, (self.laser_x, self.laser_y))
+                self.laser_y = self.laser_y - 1
+                if self.laser_y <= -20:
+                    self.laser = False
+
+            pygame.display.flip()
+
+if __name__ == '__main__':
+    pygame.init()
+    screen = pygame.display.set_mode((1024, 768), pygame.FULLSCREEN)
+    game = Game(screen)
+    game.run()
