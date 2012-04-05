@@ -142,7 +142,7 @@ class Game:
                 self.laser.update()
                 if self.laser.y < -20:
                     self.laser = None
-            self.__scr.blit(self.__playground, (28, 145))
+            self.__scr.blit(self.__playground, (15, 150))
             pygame.display.flip()
 
 if __name__ == '__main__':
