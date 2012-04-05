@@ -13,32 +13,35 @@ class Space:
         self.__maxy = self.__layout.get_rect().height
 
         self.bg = pygame.image.load('data/playground.png')
-        self.stars_spr = []
-        self.stars_spr.append(pygame.image.load('data/star1.png'))
-        self.stars_spr.append(pygame.image.load('data/star2.png'))
-        self.stars_spr.append(pygame.image.load('data/star3.png'))
 
-        self.star = []
+        self.stars_spr = []
+        self.stars_spr.append((pygame.image.load('data/star1.png'), 6, 8))
+        self.stars_spr.append((pygame.image.load('data/star2.png'), 3, 5))
+        self.stars_spr.append((pygame.image.load('data/star3.png'), 1, 2))
+
+        self.stars = []
         for i in range(MAX_STARS):
-            self.star.append((random.randint(0, self.__maxx),
-                              random.randint(0, self.__maxy),
-                              random.randint(1, 9),
-                              random.choice(self.stars_spr)))
+            star = random.choice(self.stars_spr)
+            self.stars.append((random.randint(0, self.__maxx),
+                               random.randint(0, self.__maxy),
+                               random.randint(star[1], star[2]),
+                               star[0]))
             
     def update(self):
         self.__layout.blit(self.bg, (0, 0))
 
         for i in range(MAX_STARS):
-            self.__layout.blit(self.star[i][3],
-                               (self.star[i][0], self.star[i][1]))
-            self.star[i] = (self.star[i][0],
-                            self.star[i][1] + self.star[i][2],
-                            self.star[i][2],
-                            self.star[i][3])
-            if self.star[i][1] > (self.__maxy + 10):
-                self.star[i] = (random.randint(0, self.__maxx), -5,
-                                random.randint(1, 9),
-                                random.choice(self.stars_spr))
+            self.__layout.blit(self.stars[i][3],
+                               (self.stars[i][0], self.stars[i][1]))
+            self.stars[i] = (self.stars[i][0],
+                            self.stars[i][1] + self.stars[i][2],
+                            self.stars[i][2],
+                            self.stars[i][3])
+            if self.stars[i][1] > (self.__maxy + 10):
+                star = random.choice(self.stars_spr)
+                self.stars[i] = (random.randint(0, self.__maxx), -5,
+                                 random.randint(star[1], star[2]),
+                                 star[0])
                 
 class Player:
     def __init__(self, destination):
@@ -142,7 +145,7 @@ class Game:
                 self.laser.update()
                 if self.laser.y < -20:
                     self.laser = None
-            self.__scr.blit(self.__playground, (15, 150))
+            self.__scr.blit(self.__playground, (28, 145))
             pygame.display.flip()
 
 if __name__ == '__main__':
