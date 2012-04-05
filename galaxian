@@ -9,10 +9,11 @@ class Space:
     def __init__(self, destination):
         self.__layout = destination
 
-        self.bg = pygame.image.load('background.jpg')
+        self.bg = pygame.image.load('data/background.png')
         self.stars_spr = []
-        self.stars_spr.append(pygame.image.load('star_01.png'))
-        self.stars_spr.append(pygame.image.load('star_02.png'))
+        self.stars_spr.append(pygame.image.load('data/star1.png'))
+        self.stars_spr.append(pygame.image.load('data/star2.png'))
+        self.stars_spr.append(pygame.image.load('data/star3.png'))
 
         self.star = []
         for i in range(MAX_STARS):
@@ -42,7 +43,7 @@ class Player:
         self.y = 700
         self.__layout = destination
 
-        self.ship = pygame.image.load('ship.png')
+        self.ship = pygame.image.load('data/ship.png')
 
         self.__minx = 0
         self.__maxx = (self.__layout.get_rect().right - 
@@ -74,7 +75,7 @@ class Player:
 class PlayerShoot:
     def __init__(self, layout, position):
         self.__layout = layout
-        self.shoot = pygame.image.load('shoot.png')
+        self.shoot = pygame.image.load('data/shoot.png')
 
         self.x = position[0]
         self.y = position[1]
@@ -91,7 +92,7 @@ class Game:
         self.player = Player(self.__scr)
         self.space = Space(self.__scr)
 
-        self.shoot_sound = pygame.mixer.Sound('shoot.wav')
+        self.shoot_sound = pygame.mixer.Sound('data/shoot.wav')
 
         self.laser = None
 
