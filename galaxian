@@ -52,7 +52,7 @@ class AsteroidField:
         self.__maxy = self.__layout.get_rect().height
 
         self.asteroid = [pygame.image.load('data/meteor.png')]
-        SMOOTHNESS = 6
+        SMOOTHNESS = 5
         for a in range(SMOOTHNESS, 360 - SMOOTHNESS, SMOOTHNESS):
             self.asteroid.append(self.__rotate(self.asteroid[0], a))
         self.__asteroids = []
@@ -75,9 +75,9 @@ class AsteroidField:
         if vy is None:
             vy = random.randint(1, 3)
         self.__asteroids.append((random.randint(0, len(self.asteroid) - 1),
-                                 x, -50, vy))
+                                 x, -100, vy))
 
-    def update(self):
+    def update(self, shots = None):
         destroy = []
         for a in range(len(self.__asteroids)):
             ast = self.__asteroids[a]
@@ -86,6 +86,15 @@ class AsteroidField:
                                    ast[1], ast[2] + ast[3], ast[3])
             if ast[2] > self.__maxy + 10:
                 destroy.append(a)
+
+            if not (shots is None):
+                ar = pygame.Rect(ast[1], ast[2],
+                                 self.asteroid[ast[0]].get_rect().width,
+                                 self.asteroid[ast[0]].get_rect().height)
+                collision = ar.collidelist(shots.areas())
+                if (collision != -1):
+                    destroy.append(a)
+                    shots.destroy_shot(collision)
 
         for a in destroy:
             del(self.__asteroids[a])
@@ -129,17 +138,44 @@ class Player:
         return (self.x + 30, self.y)
 
 class PlayerShoot:
-    def __init__(self, layout, position):
+    def __init__(self, layout, max_shots = 1):
         self.__layout = layout
-        self.shoot = pygame.image.load('data/shoot.png')
 
-        self.x = position[0]
-        self.y = position[1]
+        self.shoot = pygame.image.load('data/shoot.png')
+        self.__sw = self.shoot.get_rect().width
+        self.__sh = self.shoot.get_rect().height
+
+        self.shoot_sound = pygame.mixer.Sound('data/shoot.wav')
+
+        self.__max_shots = max_shots
+        self.__shots = []
+
+    def create(self, position):
+        if len(self.__shots) >= self.__max_shots:
+            return
+        self.__shots.append(position)
+        self.shoot_sound.play()
+
+    def destroy_shot(self, sid):
+        if sid < len(self.__shots):
+            del(self.__shots[sid])
+
+    def areas(self):
+        areas = []
+        for sid in self.__shots:
+            areas.append(pygame.Rect(sid[0], sid[1], self.__sw, self.__sh))
+        return areas
 
     def update(self):
-        self.y = self.y - 10
-        self.__layout.blit(self.shoot, (self.x, self.y))
-
+        destroy = []
+        for sid in range(len(self.__shots)):
+            if self.__shots[sid][1] < -self.__sh:
+                destroy.append(sid)
+            self.__layout.blit(self.shoot, self.__shots[sid])
+            self.__shots[sid] = (self.__shots[sid][0],
+                                 self.__shots[sid][1] - 10)
+        for d in destroy:
+            del(self.__shots[d])
 
 class Game:
     def __init__(self, screen):
@@ -149,9 +185,8 @@ class Game:
 
         self.space = Space(self.__playground)
         self.player = Player(self.__playground)
+        self.pshots = PlayerShoot(self.__playground, 2)
         self.asteroids = AsteroidField(self.__playground)
-
-        self.shoot_sound = pygame.mixer.Sound('data/shoot.wav')
 
         self.laser = None
 
@@ -186,18 +221,14 @@ class Game:
                     self.player.set_speed(0)
                 elif (event.type == pygame.KEYDOWN and
                       event.key == pygame.K_SPACE) and not self.laser:
-                    self.shoot_sound.play()
-                    self.laser = PlayerShoot(self.__playground,
-                                             self.player.laser_pos())
+                    self.pshots.create(self.player.laser_pos())
 
             # Draw everything
             self.space.update()
-            self.asteroids.update()
+            self.pshots.update()
+            self.asteroids.update(self.pshots)
             self.player.update()
-            if not (self.laser is None):
-                self.laser.update()
-                if self.laser.y < -20:
-                    self.laser = None
+
             self.__scr.blit(self.__playground, (28, 145))
             pygame.display.flip()
 
