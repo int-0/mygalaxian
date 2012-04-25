@@ -3,6 +3,8 @@
 import pygame
 import random
 
+GAME_FPS = 30
+
 MAX_STARS = 50
 
 class Space:
@@ -52,7 +54,7 @@ class AsteroidField:
         self.__maxy = self.__layout.get_rect().height
 
         self.asteroid = [pygame.image.load('data/meteor.png')]
-        SMOOTHNESS = 5
+        SMOOTHNESS = 2
         for a in range(SMOOTHNESS, 360 - SMOOTHNESS, SMOOTHNESS):
             self.asteroid.append(self.__rotate(self.asteroid[0], a))
         self.__asteroids = []
@@ -179,6 +181,9 @@ class PlayerShoot:
 
 class Game:
     def __init__(self, screen):
+
+        self.__clock = pygame.time.Clock()
+
         self.__scr = screen
 
         self.__playground = pygame.image.load('data/playground.png')
@@ -195,6 +200,8 @@ class Game:
     def run(self):
 
         while 1:
+
+            self.__clock.tick(GAME_FPS)
 
             if random.randint(1, 20) == 3:
                 self.asteroids.create_asteroid()
