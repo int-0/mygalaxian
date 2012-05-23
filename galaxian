@@ -236,7 +236,7 @@ class Game:
             self.asteroids.update(self.pshots)
             self.player.update()
 
-            self.__scr.blit(self.__playground, (28, 145))
+            self.__scr.blit(self.__playground, (50, 138))
             pygame.display.flip()
 
 if __name__ == '__main__':
