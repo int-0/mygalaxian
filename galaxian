@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os.path
 import sys
 import pygame
 import random
@@ -12,6 +13,18 @@ def load_image(filename):
     img = pygame.image.load(filename)
     return img.convert_alpha()
 
+def load_images(filename_base):
+    imgs = []
+    frameno = 0
+    while True:
+        filename = filename_base + '%02d' % frameno + '.png'
+        if os.path.exists(filename):
+            imgs.append(load_image(filename))
+        else:
+            break
+        frameno += 1
+    return imgs
+        
 class Space:
     def __init__(self, destination):
         self.__layout = destination
@@ -58,10 +71,7 @@ class AsteroidField:
         self.__maxx = self.__layout.get_rect().width
         self.__maxy = self.__layout.get_rect().height
 
-        self.asteroid = [load_image('data/meteor.png')]
-        SMOOTHNESS = 2
-        for a in range(SMOOTHNESS, 360 - SMOOTHNESS, SMOOTHNESS):
-            self.asteroid.append(self.__rotate(self.asteroid[0], a))
+        self.asteroid = load_images('data/asteroid_1_')
         self.__asteroids = []
 
     def __rotate(self, surface, angle):
