@@ -152,7 +152,7 @@ class Player:
         self.__layout.blit(self.ship, (self.x, self.y))
 
     def laser_pos(self):
-        return (self.x + 30, self.y)
+        return (self.x + 20, self.y)
 
 class PlayerShoot:
     def __init__(self, layout, max_shots = 1):
