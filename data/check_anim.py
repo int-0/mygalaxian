@@ -118,7 +118,7 @@ class Tester:
                     self.animation.updater()
 
             # Draw everything
-            self.__scr.blit(self.__playground, (50, 138))
+            self.__scr.blit(self.__playground, (0,150))
             self.animation.update(self.__pause)
             pygame.display.flip()
 
