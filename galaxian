@@ -5,26 +5,13 @@ import sys
 import pygame
 import random
 
+import game.common
+from game.common import ImageRegistry
+
 GAME_FPS = 30
 
 MAX_STARS = 50
 
-def load_image(filename):
-    img = pygame.image.load(filename)
-    return img.convert_alpha()
-
-def load_images(filename_base):
-    imgs = []
-    frameno = 0
-    while True:
-        filename = filename_base + '%02d' % frameno + '.png'
-        if os.path.exists(filename):
-            imgs.append(load_image(filename))
-        else:
-            break
-        frameno += 1
-    return imgs
-        
 class Space:
     def __init__(self, destination):
         self.__layout = destination
@@ -32,12 +19,15 @@ class Space:
         self.__maxx = self.__layout.get_rect().width
         self.__maxy = self.__layout.get_rect().height
 
-        self.bg = load_image('data/playground.png')
+        self.bg = ImageRegistry().get_image('data/playground.png')
 
         self.stars_spr = []
-        self.stars_spr.append((load_image('data/star1.png'), 6, 8))
-        self.stars_spr.append((load_image('data/star2.png'), 3, 5))
-        self.stars_spr.append((load_image('data/star3.png'), 1, 2))
+        self.stars_spr.append((ImageRegistry().get_image('data/star1.png'),
+                               6, 8))
+        self.stars_spr.append((ImageRegistry().get_image('data/star2.png'),
+                               3, 5))
+        self.stars_spr.append((ImageRegistry().get_image('data/star3.png'),
+                               1, 2))
 
         self.stars = []
         for i in range(MAX_STARS):
@@ -71,7 +61,7 @@ class AsteroidField:
         self.__maxx = self.__layout.get_rect().width
         self.__maxy = self.__layout.get_rect().height
 
-        self.asteroid = load_images('data/asteroid_1_')
+        self.asteroid = ImageRegistry().get_images('data/asteroid_1_')
         self.__asteroids = []
 
     def __rotate(self, surface, angle):
@@ -120,7 +110,7 @@ class Player:
     def __init__(self, destination):
         self.__layout = destination
 
-        self.ship = load_image('data/ship.png')
+        self.ship = ImageRegistry().get_image('data/ship.png')
 
         self.__maxx = self.__layout.get_rect().width
         self.__maxy = self.__layout.get_rect().height
@@ -158,7 +148,7 @@ class PlayerShoot:
     def __init__(self, layout, max_shots = 1):
         self.__layout = layout
 
-        self.shoot = load_image('data/shoot.png')
+        self.shoot = ImageRegistry().get_image('data/shoot.png')
         self.__sw = self.shoot.get_rect().width
         self.__sh = self.shoot.get_rect().height
 
@@ -201,7 +191,9 @@ class Game:
 
         self.__scr = screen
 
-        self.__playground = load_image('data/playground.png')
+        self.__playground = ImageRegistry().get_image('data/playground.png')
+        self.__scr.blit(ImageRegistry().get_image('data/background.png'),
+                        (0, 0))
 
         self.space = Space(self.__playground)
         self.player = Player(self.__playground)
@@ -209,8 +201,6 @@ class Game:
         self.asteroids = AsteroidField(self.__playground)
 
         self.laser = None
-
-        self.__scr.blit(load_image('data/background.png'), (0, 0))
 
     def run(self):
 
@@ -260,5 +250,16 @@ if __name__ == '__main__':
         screen = pygame.display.set_mode((1024, 768))
     else:
         screen = pygame.display.set_mode((1024, 768), pygame.FULLSCREEN)
+
+    # Load all images
+    ImageRegistry().load_image('data/background.png')
+    ImageRegistry().load_image('data/playground.png')
+    ImageRegistry().load_image('data/shoot.png')
+    ImageRegistry().load_image('data/ship.png')
+    ImageRegistry().load_images('data/asteroid_1_')
+    ImageRegistry().load_image('data/star1.png')
+    ImageRegistry().load_image('data/star2.png')
+    ImageRegistry().load_image('data/star3.png')
+
     game = Game(screen)
     game.run()
