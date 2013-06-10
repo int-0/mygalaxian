@@ -6,6 +6,7 @@ import pygame
 import random
 
 import game.common
+import game.player
 from game.common import ImageRegistry
 
 GAME_FPS = 30
@@ -106,44 +107,6 @@ class AsteroidField:
         for a in destroy:
             del(self.__asteroids[a])
 
-class Player:
-    def __init__(self, destination):
-        self.__layout = destination
-
-        self.ship = ImageRegistry().get_image('data/ship.png')
-
-        self.__maxx = self.__layout.get_rect().width
-        self.__maxy = self.__layout.get_rect().height
-
-        self.x = int(self.__maxx - (self.ship.get_rect().width / 2) / 2)
-        self.y = self.__maxy - self.ship.get_rect().height - 5
-
-        self.__minpx = 0
-        self.__maxpx = (self.__maxx - self.ship.get_rect().width)
-
-        self.vx = 0
-        self.max_v = 0
-
-    def set_speed(self, vx):
-        self.max_v = vx
-
-    def update(self):
-        if self.vx < self.max_v:
-            self.vx += 1
-        if self.vx > self.max_v:
-            self.vx -= 1
-        self.x += self.vx
-
-        if self.x < self.__minpx:
-            self.x = self.__minpx
-        if self.x > self.__maxpx:
-            self.x = self.__maxpx
-
-        self.__layout.blit(self.ship, (self.x, self.y))
-
-    def laser_pos(self):
-        return (self.x + 22, self.y)
-
 class PlayerShoot:
     def __init__(self, layout, max_shots = 1):
         self.__layout = layout
@@ -196,7 +159,7 @@ class Game:
                         (0, 0))
 
         self.space = Space(self.__playground)
-        self.player = Player(self.__playground)
+        self.player = game.player.Ship(self.__playground)
         self.pshots = PlayerShoot(self.__playground, 2)
         self.asteroids = AsteroidField(self.__playground)
 
@@ -219,18 +182,16 @@ class Game:
                     return
                 elif (event.type == pygame.KEYDOWN and
                       event.key == pygame.K_LEFT):
-                    self.player.set_speed(-4)
+                    self.player.go_left()
                 elif (event.type == pygame.KEYDOWN and
                       event.key == pygame.K_RIGHT):
-                    self.player.set_speed(4)
+                    self.player.go_right()
                 elif ((event.type == pygame.KEYUP) and
-                      (event.key == pygame.K_LEFT) and
-                      (self.player.max_v == -4)):
-                    self.player.set_speed(0)
+                      (event.key == pygame.K_LEFT)):
+                    self.player.no_left()
                 elif ((event.type == pygame.KEYUP) and
-                      (event.key == pygame.K_RIGHT) and
-                      (self.player.max_v == 4)):
-                    self.player.set_speed(0)
+                      (event.key == pygame.K_RIGHT)):
+                    self.player.no_right()
                 elif (event.type == pygame.KEYDOWN and
                       event.key == pygame.K_SPACE) and not self.laser:
                     self.pshots.create(self.player.laser_pos())
@@ -256,6 +217,10 @@ if __name__ == '__main__':
     ImageRegistry().load_image('data/playground.png')
     ImageRegistry().load_image('data/shoot.png')
     ImageRegistry().load_image('data/ship.png')
+    ImageRegistry().load_images('data/ship_left_')
+    ImageRegistry().load_images('data/ship_right_')
+    ImageRegistry().load_images('data/ship_shoot_')
+
     ImageRegistry().load_images('data/asteroid_1_')
     ImageRegistry().load_image('data/star1.png')
     ImageRegistry().load_image('data/star2.png')
