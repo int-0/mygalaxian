@@ -7,6 +7,7 @@ sys.path.append(os.getcwd())
 import pygame
 import random
 
+import game.shots
 import game.common
 import game.player
 from game.common import ImageRegistry
@@ -113,10 +114,6 @@ class PlayerShoot:
     def __init__(self, layout, max_shots = 1):
         self.__layout = layout
 
-        self.shoot = ImageRegistry().get_image('data/shoot.png')
-        self.__sw = self.shoot.get_rect().width
-        self.__sh = self.shoot.get_rect().height
-
         self.shoot_sound = pygame.mixer.Sound('data/shoot.wav')
 
         self.__max_shots = max_shots
@@ -125,8 +122,9 @@ class PlayerShoot:
     def create(self, position):
         if len(self.__shots) >= self.__max_shots:
             return
-        self.__shots.append(position)
-        self.shoot_sound.play()
+        self.__shots.append(game.shots.PlayerBasic(self.__layout,
+                                                   position))
+        #self.shoot_sound.play()
 
     def destroy_shot(self, sid):
         if sid < len(self.__shots):
@@ -134,18 +132,17 @@ class PlayerShoot:
 
     def areas(self):
         areas = []
-        for sid in self.__shots:
-            areas.append(pygame.Rect(sid[0], sid[1], self.__sw, self.__sh))
+        for bullet in self.__shots:
+            areas.append(bullet.area)
         return areas
 
     def update(self):
         destroy = []
         for sid in range(len(self.__shots)):
-            if self.__shots[sid][1] < -self.__sh:
+            if self.__shots[sid].destroy:
                 destroy.append(sid)
-            self.__layout.blit(self.shoot, self.__shots[sid])
-            self.__shots[sid] = (self.__shots[sid][0],
-                                 self.__shots[sid][1] - 10)
+            else:
+                self.__shots[sid].update()
         for d in destroy:
             del(self.__shots[d])
 
@@ -218,6 +215,7 @@ if __name__ == '__main__':
     ImageRegistry().load_image('data/background.png')
     ImageRegistry().load_image('data/playground.png')
     ImageRegistry().load_image('data/shoot.png')
+    ImageRegistry().load_images('data/shoot_')
     ImageRegistry().load_image('data/ship.png')
     ImageRegistry().load_images('data/ship_left_')
     ImageRegistry().load_images('data/ship_right_')
@@ -228,5 +226,5 @@ if __name__ == '__main__':
     ImageRegistry().load_image('data/star2.png')
     ImageRegistry().load_image('data/star3.png')
 
-    game = Game(screen)
-    game.run()
+    main_game = Game(screen)
+    main_game.run()
