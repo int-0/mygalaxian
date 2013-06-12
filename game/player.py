@@ -104,4 +104,4 @@ class Ship(object):
             self.__layout.blit(self.__moving_left, (self.x, self.y))
 
     def laser_pos(self):
-        return (self.x + 22, self.y)
+        return (self.x + 20, self.y + 5)
