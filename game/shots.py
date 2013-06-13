@@ -34,7 +34,7 @@ class PlayerBasic(object):
             self.__layout.blit(self.__images[self.__current],
                                self.position)
             self.position = (self.position[0],
-                             self.position[1] - 10)
+                             self.position[1] - 9)
             self.__current += 1
             if self.__current == self.__f_size:
                 self.__current = 0

@@ -124,4 +124,4 @@ class Ship(object):
 
     @property
     def laser_pos(self):
-        return (self.x + 20, self.y + 5)
+        return (self.x + 18, self.y -20 )
