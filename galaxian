@@ -158,11 +158,10 @@ class Game:
                         (0, 0))
 
         self.space = Space(self.__playground)
-        self.player = game.player.Ship(self.__playground)
         self.pshots = PlayerShoot(self.__playground, 2)
+        self.player = game.player.Ship(self.__playground,         
+                                       self.pshots.create)
         self.asteroids = AsteroidField(self.__playground)
-
-        self.laser = None
 
     def run(self):
 
@@ -192,8 +191,8 @@ class Game:
                       (event.key == pygame.K_RIGHT)):
                     self.player.no_right()
                 elif (event.type == pygame.KEYDOWN and
-                      event.key == pygame.K_SPACE) and not self.laser:
-                    self.pshots.create(self.player.laser_pos())
+                      event.key == pygame.K_SPACE):
+                    self.player.shoot()
 
             # Draw everything
             self.space.update()

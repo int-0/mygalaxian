@@ -7,9 +7,10 @@ _MAX_SPEED = 6
 
 
 class Ship(object):
-    def __init__(self, destination):
+    def __init__(self, destination, action_cb = None):
 
         self.__layout = destination
+        self.__action = action_cb
 
         self.static_ship = [ImageRegistry().get_image('data/ship.png')]
         self.left_ship = ImageRegistry().get_images('data/ship_left_')
@@ -33,6 +34,7 @@ class Ship(object):
 
         self.__fr = 0
         self.__fl = 0
+        self.__sf = -1
 
     def go_left(self):
         self.__req_spd = -_MAX_SPEED
@@ -82,6 +84,16 @@ class Ship(object):
             return self.right_ship[self.__fr]
         return self.static_ship[0]
 
+    @property
+    def __shooting(self):
+        self.__sf += 1
+        if self.__sf >= len(self.shot_ship):
+            self.__sf = -1
+            if self.__action is not None:
+                self.__action(self.laser_pos)
+            return self.shot_ship[0]
+        return self.shot_ship[self.__sf]
+
     def update(self):
         if self.vx != self.__req_spd:
             if self.vx < self.__req_spd:
@@ -96,12 +108,20 @@ class Ship(object):
         if self.x > self.__maxpx:
             self.x = self.__maxpx
 
-        if self.__req_spd == 0:
+        if self.__sf >= 0:
+            self.__layout.blit(self.__shooting, (self.x, self.y))
+        elif self.__req_spd == 0:
             self.__layout.blit(self.__no_moving, (self.x, self.y))
         elif self.__req_spd > 0:
             self.__layout.blit(self.__moving_right, (self.x, self.y))
         else:
             self.__layout.blit(self.__moving_left, (self.x, self.y))
 
+    def shoot(self):
+        if self.__sf >= 0:
+            return
+        self.__sf = 0
+
+    @property
     def laser_pos(self):
         return (self.x + 20, self.y + 5)
