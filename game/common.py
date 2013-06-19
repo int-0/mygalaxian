@@ -3,6 +3,16 @@
 import pygame
 import os.path
 
+DEFAULT_RESOLUTION = (1024, 768)
+
+
+class ImageNotFound(Exception):
+    def __init__(self, image):
+        self.__image_name = image
+
+    def __str__(self):
+        return 'Image not found in registry: %s' % self.__image_name
+
 
 def load_image(filename):
     img = pygame.image.load(filename)
@@ -23,10 +33,7 @@ def load_images(filename_base):
 
 
 class ImageRegistry(object):
-    """ A python singleton """
-
     class __impl(object):
-        """ Implementation of the singleton interface """
         __registry = {}
 
         def load_image(self, filename):
@@ -41,6 +48,9 @@ class ImageRegistry(object):
                 else:
                     break
                 frameno += 1
+
+        def flush_all(self):
+            self.__registry = {}
 
         @property
         def registered_images(self):
@@ -65,23 +75,81 @@ class ImageRegistry(object):
                 frameno += 1
             return images
 
-    # storage for the instance reference
     __instance = None
 
     def __init__(self):
-        """ Create singleton instance """
-        # Check whether we already have an instance
         if ImageRegistry.__instance is None:
-            # Create and remember instance
             ImageRegistry.__instance = ImageRegistry.__impl()
-
-        # Store instance reference as the only member in the handle
         self.__dict__['_ImageRegistry__instance'] = ImageRegistry.__instance
 
     def __getattr__(self, attr):
-        """ Delegate access to implementation """
         return getattr(self.__instance, attr)
 
     def __setattr__(self, attr, value):
-        """ Delegate access to implementation """
+        return setattr(self.__instance, attr, value)
+
+
+class Screen(object):
+    class __impl(object):
+        def __init__(self, resolution=DEFAULT_RESOLUTION,
+                     windowed=False,
+                     caption='Sigame Screen'):
+            if not pygame.display.get_init():
+                pygame.display.init()
+            pygame.display.set_caption(caption)
+
+            self.__res = resolution
+            flag = 0 if windowed else (pygame.FULLSCREEN +
+                                       pygame.HWSURFACE +
+                                       pygame.DOUBLEBUF)
+            self.__scr = pygame.display.set_mode(self.__res,
+                                                 flag)
+            self.__gnd = pygame.Surface(resolution)
+
+            self.__dirty = pygame.sprite.RenderUpdates()
+            self.__raw_dirty = []
+
+        def __load_image(self, filename):
+            image = pygame.image.load(filename)
+            return image.convert_alpha()
+
+        def set_background(self, filename):
+            self.__gnd = self.__load_image(filename)
+            self.__scr.blit(self.__gnd, (0, 0))
+            pygame.display.flip()
+
+        # Add one sprite to screen
+        def add(self, sprite):
+            self.__dirty.add(sprite)
+
+        # Update and draw render group
+        def update(self):
+            self.__dirty.update()
+            dirty = self.__dirty.draw(self.__scr)
+            pygame.display.update(dirty + self.__raw_dirty)
+            self.__dirty.clear(self.__scr, self.__gnd)
+            self.__raw_dirty = []
+
+        def blit(self, surface, position):
+            self.__raw_dirty.append(self.__scr.blit(surface, position))
+
+        @property
+        def surface(self):
+            return self.__scr
+
+    __instance = None
+
+    def __init__(self, resolution=DEFAULT_RESOLUTION,
+                 windowed=False,
+                 caption='Sigame Screen'):
+        if Screen.__instance is None:
+            Screen.__instance = Screen.__impl(resolution,
+                                              windowed,
+                                              caption)
+        self.__dict__['_Screen__instance'] = Screen.__instance
+
+    def __getattr__(self, attr):
+        return getattr(self.__instance, attr)
+
+    def __setattr__(self, attr, value):
         return setattr(self.__instance, attr, value)

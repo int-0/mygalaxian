@@ -15,7 +15,9 @@ class Ship(object):
         self.static_ship = [ImageRegistry().get_image('data/ship.png')]
         self.left_ship = ImageRegistry().get_images('data/ship_left_')
         self.right_ship = ImageRegistry().get_images('data/ship_right_')
-        self.shot_ship = ImageRegistry().get_images('data/ship_shoot_')
+        self.cshot_ship = ImageRegistry().get_images('data/ship_shoot_')
+        self.lshot_ship = ImageRegistry().get_images('data/ship_shoot_left_')
+        self.rshot_ship = ImageRegistry().get_images('data/ship_shoot_right_')
 
         self.__current_frame = 0
 
@@ -87,12 +89,27 @@ class Ship(object):
     @property
     def __shooting(self):
         self.__sf += 1
-        if self.__sf >= len(self.shot_ship):
-            self.__sf = -1
-            if self.__action is not None:
-                self.__action(self.laser_pos)
-            return self.shot_ship[0]
-        return self.shot_ship[self.__sf]
+        if self.vx < 0:
+            if self.__sf >= len(self.lshot_ship):
+                self.__sf = -1
+                if self.__action is not None:
+                    self.__action(self.laser_pos)
+                return self.lshot_ship[0]
+            return self.lshot_ship[self.__sf]
+        elif self.vx > 0:
+            if self.__sf >= len(self.rshot_ship):
+                self.__sf = -1
+                if self.__action is not None:
+                    self.__action(self.laser_pos)
+                return self.rshot_ship[0]
+            return self.rshot_ship[self.__sf]
+        else:
+            if self.__sf >= len(self.cshot_ship):
+                self.__sf = -1
+                if self.__action is not None:
+                    self.__action(self.laser_pos)
+                return self.cshot_ship[0]
+            return self.cshot_ship[self.__sf]
 
     def update(self):
         if self.vx != self.__req_spd:

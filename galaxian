@@ -154,7 +154,7 @@ class Game:
 
         self.__clock = pygame.time.Clock()
 
-        self.__scr = screen
+        self.__scr = screen.surface
 
         self.__playground = ImageRegistry().get_image('data/playground.png')
         self.__scr.blit(ImageRegistry().get_image('data/background.png'),
@@ -208,10 +208,8 @@ class Game:
 
 if __name__ == '__main__':
     pygame.init()
-    if '-win' in sys.argv:
-        screen = pygame.display.set_mode((1024, 768))
-    else:
-        screen = pygame.display.set_mode((1024, 768), pygame.FULLSCREEN)
+    screen = game.common.Screen(windowed=('-win' in sys.argv),
+                                caption='MyGalaxian')
 
     # Load all images
     ImageRegistry().load_image('data/background.png')
@@ -222,7 +220,8 @@ if __name__ == '__main__':
     ImageRegistry().load_images('data/ship_left_')
     ImageRegistry().load_images('data/ship_right_')
     ImageRegistry().load_images('data/ship_shoot_')
-
+    ImageRegistry().load_images('data/ship_shoot_left_')
+    ImageRegistry().load_images('data/ship_shoot_right_')
     ImageRegistry().load_images('data/asteroid_1_')
     ImageRegistry().load_image('data/star1.png')
     ImageRegistry().load_image('data/star2.png')
