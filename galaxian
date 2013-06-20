@@ -45,8 +45,9 @@ class Space:
         self.__layout.blit(self.bg, (0, 0))
 
         for i in range(MAX_STARS):
-            self.__layout.blit(self.stars[i][3],
-                               (self.stars[i][0], self.stars[i][1]))
+            if random.randint(0, 50) != 5 or self.stars[i][2] > 4:
+                self.__layout.blit(self.stars[i][3],
+                                   (self.stars[i][0], self.stars[i][1]))
             self.stars[i] = (self.stars[i][0],
                             self.stars[i][1] + self.stars[i][2],
                             self.stars[i][2],
@@ -62,10 +63,12 @@ class AsteroidField:
         self.__layout = destination
         self.__max_asteroids = max_asteroids
 
-        self.__maxx = self.__layout.get_rect().width
+        self.asteroid = ImageRegistry().get_images('data/asteroid_1_')
+        self.__nasteroids = len(self.asteroid)
+        self.__maxx = (self.__layout.get_rect().width - 
+                       self.asteroid[0].get_rect().width)
         self.__maxy = self.__layout.get_rect().height
 
-        self.asteroid = ImageRegistry().get_images('data/asteroid_1_')
         self.__asteroids = []
 
     def __rotate(self, surface, angle):
@@ -85,7 +88,7 @@ class AsteroidField:
             x = random.randint(0, self.__maxx)
         if vy is None:
             vy = random.randint(1, 3)
-        self.__asteroids.append((random.randint(0, len(self.asteroid) - 1),
+        self.__asteroids.append((random.randint(0, self.__nasteroids - 1),
                                  x, -100, vy))
 
     def update(self, shots = None):
@@ -93,7 +96,7 @@ class AsteroidField:
         for a in range(len(self.__asteroids)):
             ast = self.__asteroids[a]
             self.__layout.blit(self.asteroid[ast[0]], (ast[1], ast[2]))
-            self.__asteroids[a] = ((ast[0] + 1) % len(self.asteroid),
+            self.__asteroids[a] = ((ast[0] + 1) % self.__nasteroids,
                                    ast[1], ast[2] + ast[3], ast[3])
             if ast[2] > self.__maxy + 10:
                 destroy.append(a)
