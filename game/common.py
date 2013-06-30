@@ -14,6 +14,14 @@ class ImageNotFound(Exception):
         return 'Image not found in registry: %s' % self.__image_name
 
 
+class ActionNotFound(Exception):
+    def __init__(self, action):
+        self.__action_name = action
+
+    def __str__(self):
+        return "Action not found in actor's registry: %s" % self.__action_name
+
+
 def load_image(filename):
     img = pygame.image.load(filename)
     return img.convert_alpha()
@@ -153,3 +161,124 @@ class Screen(object):
 
     def __setattr__(self, attr, value):
         return setattr(self.__instance, attr, value)
+
+
+class Animation(object):
+    def __init__(self, frame_sheet, callback=None):
+        self.__frame = frame_sheet
+
+        self.__max_frame = len(frame_sheet)
+        self.__current = 0
+
+        self.__callback = callback
+        self.__fire_callback = True
+
+        self.frame = self.__frame_no_loop
+
+    def reset(self):
+        self.__current = 0
+        self.__fire_callback = True
+
+    def set_callback(self, callback):
+        self.__callback = callback
+
+    @property
+    def callback(self):
+        return self.__callback
+
+    @property
+    def image(self):
+        return self.__frame[self.__current]
+
+    @property
+    def rect(self):
+        return self.image.get_rect()
+
+    def set_loop(self, loop_mode):
+        self.frame = self.__loop if loop_mode else self.__no_loop
+
+    @property
+    def __no_loop(self):
+        image = self.image
+        if (self.__current + 1) == self.__max_frame:
+            if ((self.__callback is not None) and self.__fire_callback):
+                self.__callback()
+                self.__fire_callback = False
+        else:
+            self.__current += 1
+        return image
+
+    @property
+    def __loop(self):
+        image = self.image
+        if (self.__current + 1) == self.__max_frame:
+            if ((self.__callback is not None) and self.__fire_callback):
+                self.__callback()
+                self.__fire_callback = False
+            self.reset()
+        else:
+            self.__current += 1
+        return image
+
+
+def new_animation(image_prefix, callback=None):
+    return Animation(ImageRegistry().get_images(image_prefix), callback)
+
+
+def new_loop(image_prefix, callback=None):
+    anim = Animation(ImageRegistry().get_images(image_prefix), callback)
+    anim.set_loop(True)
+    return anim
+
+
+class Actor(pygame.sprite.DirtySprite):
+    def __init__(self, action_registry, steering, initial_position):
+        pygame.sprite.DirtySprite.__init__(self)
+        if 'initial' not in action_registry.keys():
+            raise ActionNotFound('initial')
+
+        # Frames
+        self.__animation = action_registry
+        self.__current = 'initial'
+
+        # Position/movement
+        self.rect = self.__animation[self.__current].rect
+        self.rect.center = initial_position
+        self.__steer = steering
+
+    def add_action(self, action_name, action):
+        self.__animation[action_name] = action
+
+    def set_callback(self, action_name, callback):
+        if action_name not in self.__animation.keys():
+            raise ActionNotFound(action_name)
+        self.__action[action_name].set_callback(callback)
+
+    def get_callback(self, action_name):
+        if action_name not in self.__animation.keys():
+            raise ActionNotFound(action_name)
+        return self.__action[action_name].callback
+
+    @property
+    def action(self):
+        return self.__current
+
+    @action.setter
+    def action(self, new_action):
+        # Check if new_action exists!
+        self.__current = new_action
+        self.__animation[self.__current].reset()
+
+    @property
+    def callback(self):
+        return self.get_callback(self.__current)
+
+    @callback.setter
+    def callback(self, new_callback):
+        self.set_callback(self.__current, callback)
+
+    def update(self):
+        self.image = self.__animation[self.__current].frame
+
+    def process(self, event):
+        self.__steer.process(event)
